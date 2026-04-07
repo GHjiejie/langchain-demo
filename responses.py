@@ -36,14 +36,19 @@ def extract_text(message_chunk) -> str:
 
 full_text = []
 for event in agent.stream(
-    {"messages": [{"role": "user", "content": "请你介绍一下openai？"}]},
+    {"messages": [{"role": "user", "content": "你是谁？"}]},
     stream_mode="messages",
     version="v2",
 ):
+    
     if event["type"] != "messages":
         continue
 
     message_chunk, metadata = event["data"]
+
+    print(f"message_chunk: {message_chunk}")
+    print("\n")
+    
     if metadata.get("langgraph_node") != "model":
         continue
 

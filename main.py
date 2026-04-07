@@ -1,31 +1,25 @@
 import os
-
-from langchain.chat_models import init_chat_model
-from langchain.messages import HumanMessage, SystemMessage, AIMessage
-from langchain.tools import tool, ToolRuntime
-from langchain.agents import create_agent
-from langchain.agents.middleware import dynamic_prompt, ModelRequest
-from langchain.agents import create_agent
-from typing import TypedDict
-from langchain.agents.middleware import dynamic_prompt, ModelRequest
-from langgraph.config import get_stream_writer
-import dotenv
-
-dotenv.load_dotenv()
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+from pydantic import SecretStr
 
 
-chat_model = init_chat_model(
-    model="claude-opus-4-6",
-    base_url=os.getenv("BASE_URL"),
-    api_key=os.getenv("API_KEY"),
+load_dotenv()
+
+llm = ChatOpenAI(
+    model="gpt-5.4",   # 或者改成你的网关实际支持的模型名
+    api_key=SecretStr("sk-846f1b178fbb2f6810f0cda48c69c9a7c2ffd29c8847887820bf7ee0a17a8945"),
+    base_url="https://gmncode.cn",
+    default_headers={
+        "User-Agent": "codex_vscode/0.118.0-alpha.2 (Mac OS 26.2.0; arm64) unknown (VS Code; 26.325.31654)",
+        # 如果中转服务对 stainless 头敏感，可以尝试置空（部分版本支持）
+       "x-stainless-os": "Unknown",
+        "x-stainless-lang": "python"
+    },
+    use_responses_api=True,
+    reasoning_effort="high"
 )
-print(chat_model)
 
+resp = llm.invoke("你好？")
 
-system_msg = SystemMessage("You are a helpful assistant.")
-human_msg = HumanMessage("Hello, how are you?")
-
-# Use with chat models
-messages = [system_msg, human_msg]
-response = chat_model.invoke(messages)
-print(response)
+print(resp)

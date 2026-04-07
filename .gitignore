@@ -2,4 +2,6 @@
 .env
 .venv
 zhengjie.egg-info/
+__pycache__/
+
 

@@ -1,5 +1,5 @@
 from model import chat_model_response
-from typing import Any
+from typing import Any, NotRequired
 from langchain.agents import create_agent ,AgentState
 
 from langchain.messages import HumanMessage ,AIMessage
@@ -19,10 +19,17 @@ class CustomContext(BaseModel):
     name:str
     age:int
     sex:str
+    tel:str
+
+
+class NormalConText(BaseModel):
+    user_id: str
+    role: str
 
 
 class CustomState(AgentState):
-    user_name: str
+    user_name: NotRequired[str]
+    phone: str
 
 
 
@@ -33,15 +40,34 @@ def get_weather(city:str) -> str:
 
 
 @before_agent
-def before_agent_middleware(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+def before_agent_middleware(state:CustomState, runtime: Runtime[CustomContext]) -> dict[str, Any] | None:
    print(f"Before agent: {runtime.context}")
+   # 在 before_agent 中把 runtime.context 同步到 state
+   return {"user_name": runtime.context.name, "phone": runtime.context.tel}
+
+@before_model
+def before_model_middleware(state: CustomState, runtime: Runtime[CustomContext]) -> dict[str, Any] | None:
+   print(f"Before model: {runtime.context}")
+  
    return None
-   
-    
+
+@after_agent
+def after_agent_middleware(state: CustomState, runtime: Runtime[CustomContext]) -> dict[str, Any] | None:
+   print(f"After agent: {runtime.context}")
+   print(f"State:{state}")
+   return None
+
+@after_model
+def after_model_middleware(state: CustomState, runtime: Runtime[CustomContext]) -> dict[str, Any] | None:
+   print(f"After model: {runtime.context}")
+   print(f"State:{state}")
+   return None
 
 agent = create_agent(
   model=chat_model_response,
-  middleware=[before_agent_middleware]
+  middleware=[before_agent_middleware, before_model_middleware, after_agent_middleware, after_model_middleware],
+  state_schema=CustomState,
+  context_schema=CustomContext,
   )
 
 
@@ -57,11 +83,10 @@ def extract_text_from_msg(msg) -> str:
     return "".join(parts)
 
 for chunk in agent.stream(
-  {"messages": [{"role": "user", "content": "你是谁？"}]},
-  stream_mode=["messages","updates"],
-  version="v2",
-  context=CustomContext(name="zhengjie", age=24, sex="male"),
-  
+  {"messages": [{"role": "user", "content": "你是谁？"}] },
+    stream_mode=["messages", "updates"],
+    version="v2",
+    context=CustomContext(name="zhengjie", age=24, sex="male", tel="19168972650"),
 ):
    
   if chunk["type"] == "messages":
@@ -71,4 +96,3 @@ for chunk in agent.stream(
 
   
   
-

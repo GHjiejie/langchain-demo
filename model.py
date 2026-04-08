@@ -7,7 +7,7 @@ from langchain.chat_models import init_chat_model
 dotenv.load_dotenv()
 
 chat_model_response = init_chat_model(
-    model="gpt-5.4",
+    model="gpt-5.3-codex",
     api_key=os.getenv("API_KEY"),
     base_url=os.getenv("BASE_URL"),
     default_headers={
@@ -16,4 +16,7 @@ chat_model_response = init_chat_model(
         "x-stainless-lang": "python",
     },
     use_responses_api=True,
+    reasoning_effort="xhigh",
+    
+    
 )

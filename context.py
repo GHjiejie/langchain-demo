@@ -39,6 +39,7 @@ def get_weather(city:str) -> str:
   return f"The weather in {city} is sunny."
 
 
+# 在钩子中访问context和state
 @before_agent
 def before_agent_middleware(state:CustomState, runtime: Runtime[CustomContext]) -> dict[str, Any] | None:
    print(f"Before agent: {runtime.context}")
